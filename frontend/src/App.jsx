@@ -28,7 +28,7 @@ function App() {
 
   useEffect(() => {
     const ws = new WebSocket(
-  "wss://websocket-chat-backend.onrender.com"
+  "wss://raivats-webchat.onrender.com"
 );
 
     ws.onopen = () => {
