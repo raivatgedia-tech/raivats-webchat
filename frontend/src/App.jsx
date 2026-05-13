@@ -27,7 +27,9 @@ function App() {
   const bottomRef = useRef(null);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://192.168.10.84:3000");
+    const ws = new WebSocket(
+  "wss://websocket-chat-backend.onrender.com"
+);
 
     ws.onopen = () => {
       console.log("Connected to server");
