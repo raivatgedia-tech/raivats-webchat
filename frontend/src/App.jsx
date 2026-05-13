@@ -23,13 +23,14 @@ function App() {
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
   const [messages, setMessages] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState(0);
 
   const bottomRef = useRef(null);
 
   useEffect(() => {
     const ws = new WebSocket(
-  "wss://raivats-webchat.onrender.com"
-);
+      "wss://raivats-webchat.onrender.com"
+    );
 
     ws.onopen = () => {
       console.log("Connected to server");
@@ -38,7 +39,17 @@ function App() {
     ws.onmessage = (event) => {
       const parsedData = JSON.parse(event.data);
 
-      setMessages((prev) => [...prev, parsedData]);
+      if (parsedData.type === "history") {
+        setMessages(parsedData.data);
+      }
+
+      if (parsedData.type === "message") {
+        setMessages((prev) => [...prev, parsedData.data]);
+      }
+
+      if (parsedData.type === "online_users") {
+        setOnlineUsers(parsedData.count);
+      }
     };
 
     ws.onclose = () => {
@@ -77,6 +88,10 @@ function App() {
   return (
     <div style={styles.container}>
       <h1>WebSocket Chat</h1>
+
+      <p style={styles.onlineUsers}>
+        Online Users: {onlineUsers}
+      </p>
 
       <input
         style={styles.input}
@@ -145,6 +160,11 @@ const styles = {
     margin: "50px auto",
     fontFamily: "Arial",
     color: "white",
+  },
+
+  onlineUsers: {
+    marginBottom: "10px",
+    color: "#4ecdc4",
   },
 
   chatBox: {

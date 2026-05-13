@@ -13,21 +13,52 @@ const wss = new WebSocket.Server({ server });
 
 const clients = new Set();
 
+const messages = [];
+
+const broadcastOnlineUsers = () => {
+  clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(
+        JSON.stringify({
+          type: "online_users",
+          count: clients.size,
+        })
+      );
+    }
+  });
+};
+
 wss.on("connection", (ws) => {
   console.log("Client connected");
 
   clients.add(ws);
+
+  broadcastOnlineUsers();
+
+  ws.send(
+    JSON.stringify({
+      type: "history",
+      data: messages,
+    })
+  );
 
   ws.on("message", (message) => {
     const parsedMessage = JSON.parse(message);
 
     parsedMessage.timestamp = new Date().toLocaleTimeString();
 
+    messages.push(parsedMessage);
+
     console.log(parsedMessage);
 
     clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(parsedMessage));
+        client.send(
+          JSON.stringify({
+            type: "message",
+            data: parsedMessage,
+          })
+        );
       }
     });
   });
@@ -36,6 +67,8 @@ wss.on("connection", (ws) => {
     console.log("Client disconnected");
 
     clients.delete(ws);
+
+    broadcastOnlineUsers();
   });
 });
 
